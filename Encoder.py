@@ -2,11 +2,10 @@ import DataGen
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from PIL import Image
-from torch.utils.data import TensorDataset, DataLoader
 import torch.nn as nn
 import pickle
 import random
+import MNIST_data_reader
 
 #We are creating an encoder to condense the images of circles down into a single value (make it try to estimate the radius of the circle)
 # The image comes in as 28x28 pixels, we want to flatten it into 784 pixels and pass it throug the encoder.
@@ -70,11 +69,14 @@ class AutoEncoder(nn.Module):
 def train_and_save_model():
     set_seed(13)
     # Set the model params
-    z_size = 1
+    z_size = 10
     input_shape = (1, 28, 28)
 
     # Get the dataset
-    dataset, dataloader = DataGen.load_and_prep_dataset()
+    # dataset, dataloader = DataGen.load_and_prep_dataset()
+
+    dataset = MNIST_data_reader.train_dataset
+    dataloader = MNIST_data_reader.train_loader
 
     print("Setting up the AE")
     model_ae = AutoEncoder(z_size, input_shape)
@@ -83,22 +85,22 @@ def train_and_save_model():
     loss_fn = nn.MSELoss()
     optim = torch.optim.Adam(model_ae.parameters(), 0.0003)
 
-    num_epochs = 15
+    num_epochs = 50
 
     train_losses = []
     print("Training the AE")
     for epoch in range(1, num_epochs + 1):
         print(f"Epoch {epoch}")
         batch_losses = []
-        for i, (x, _) in enumerate(dataset):
+        for images, labels in dataloader:
             model_ae.train()
-            x = x.to(device)
+            x = images.to(device)
 
+            optim.zero_grad()
             y_hat = model_ae(x).squeeze(1)
             loss = loss_fn(y_hat, x)
             loss.backward()
             optim.step()
-            optim.zero_grad()
 
             batch_losses.append(np.array([loss.data.item()]))
 
@@ -128,8 +130,9 @@ def load_model():
 if __name__ == "__main__":
     # train_and_save_model()
     model_ae = load_model()
-
-    dataset, dataloader = DataGen.load_and_prep_dataset()
+    #
+    # dataset, dataloader = DataGen.load_and_prep_dataset()
+    dataset = MNIST_data_reader.train_dataset
 
     fig, axes = plt.subplots(2, 15, figsize=(15, 6))  # Adjust figsize as you like
     axes = axes.flatten()  # Flatten in case axes is a 2D array
