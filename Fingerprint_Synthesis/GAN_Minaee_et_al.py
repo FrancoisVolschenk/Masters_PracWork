@@ -13,17 +13,6 @@ class TVGan(nn.Module):
 
         # -------- Generator --------
         self.generator = nn.Sequential(
-            # nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(256),
-            # nn.ReLU(),
-            # nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(128),
-            # nn.ReLU(),
-            # nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(64),
-            # nn.ReLU(),
-            # nn.ConvTranspose2d(64, image_channels, kernel_size=4, stride=2, padding=1),
-            # nn.Tanh(),
             nn.ConvTranspose2d(512, 512, 4, 2, 1),  # 4 -> 8
             nn.BatchNorm2d(512),
             nn.ReLU(True),
@@ -60,20 +49,6 @@ class Discriminator(nn.Module):
         super().__init__()
         # -------- Discriminator --------
         self.discriminator = nn.Sequential(
-            # nn.Conv2d(image_channels, 64, kernel_size=4, stride=2, padding=1),
-            # nn.LeakyReLU(0.2, inplace=True),
-            # nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(128),
-            # nn.LeakyReLU(0.2, inplace=True),
-            # nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(256),
-            # nn.LeakyReLU(0.2, inplace=True),
-            # nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(512),
-            # nn.LeakyReLU(0.2, inplace=True),
-            # nn.Flatten(),
-            # nn.Linear(512 * 4 * 4, 1),
-            # Input: (image_channels) x 512 x 512
             nn.Conv2d(image_channels, 16, 4, 2, 1),  # -> (16 x 256 x 256)
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 32, 4, 2, 1),  # -> (32 x 128 x 128)
