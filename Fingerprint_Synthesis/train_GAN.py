@@ -47,11 +47,9 @@ transform = transforms.Compose(
 
 print("Loading the dataset")
 
-# dataset = ImageFolder(
-#     root="./Fingerprint_Synthesis/dataset/Cross_Fp_Processed_64x64", transform=transform
-# )
 dataset = ImageFolder(
-    root="./Fingerprint_Synthesis/dataset/Cross_Fp_Processed", transform=transform
+    root="./Masters_PracWork/Fingerprint_Synthesis/dataset/Cross_Fp_Processed",
+    transform=transform,
 )
 train_loader = DataLoader(
     dataset=dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4
@@ -85,7 +83,7 @@ def total_variation_loss(img):
     return torch.mean(diff_x) + torch.mean(diff_y)
 
 
-writer = SummaryWriter(f"runs/GAN/{MODEL_NAME}")
+writer = SummaryWriter(f"./Masters_PracWork/runs/GAN/{MODEL_NAME}")
 global_step = 0
 print("Starting the training")
 for epoch in range(NUM_EPOCHS):
@@ -161,11 +159,11 @@ writer.close()
 print("Saving the model")
 torch.save(
     generator.state_dict(),
-    f"./Fingerprint_Synthesis/model/GANs/{MODEL_NAME}_Generator",
+    f"./Masters_PracWork/Fingerprint_Synthesis/model/GANs/{MODEL_NAME}_Generator",
 )
 torch.save(
     discriminator.state_dict(),
-    f"./Fingerprint_Synthesis/model/GANs/{MODEL_NAME}_Discriminator",
+    f"./Masters_PracWork/Fingerprint_Synthesis/model/GANs/{MODEL_NAME}_Discriminator",
 )
 
 del generator

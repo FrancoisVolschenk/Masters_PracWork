@@ -2,8 +2,10 @@ from PIL import Image
 import os
 from pathlib import Path
 
-input_dir = Path("./Fingerprint_Synthesis/dataset/Cross_Fp_Processed")
-output_dir = Path("./Fingerprint_Synthesis/dataset/Cross_Fp_Processed_64x64/fp")
+input_dir = Path("./Masters_PracWork/Fingerprint_Synthesis/dataset/Cross_Fp_Processed")
+output_dir = Path(
+    "./Masters_PracWork/Fingerprint_Synthesis/dataset/Cross_Fp_Processed_64x64/fp"
+)
 # target_size = (512, 512)
 target_size = (64, 64)
 

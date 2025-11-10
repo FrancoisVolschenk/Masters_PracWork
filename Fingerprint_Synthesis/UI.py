@@ -4,7 +4,8 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import infer
 
-MODEL_DIR = "./Fingerprint_Synthesis/model"
+# MODEL_DIR = "./Masters_PracWork/Fingerprint_Synthesis/model"
+MODEL_DIR = "./model"
 
 
 class ModelUI:
@@ -84,9 +85,7 @@ class ModelUI:
         path = filedialog.askopenfilename(title="Select Image", filetypes=filetypes)
         if path:
             self.input_image = path
-            # self.show_image(img_path=path)
 
-            # Run inference (stub)
             self.run_inference(path)
 
     def run_inference(self, img_path):
@@ -95,12 +94,14 @@ class ModelUI:
         original_img, reconstructed_img = infer.process_image(
             self.loaded_model, img_path
         )
-        # TODO: Replace with actual inference, save result to self.output_image
-        # For now, just re-display the input
+
         self.show_images(original_img, reconstructed_img)
 
     def show_images(self, original, reconstructed):
-        # Resize both to fit UI
+        reconstructed.save(
+            "./SourceAFIS/SourceAFIS/src/main/resources/probes/generated.png"
+        )
+
         original = original.resize((400, 400))
         reconstructed = reconstructed.resize((400, 400))
 
@@ -114,6 +115,7 @@ class ModelUI:
 
 
 if __name__ == "__main__":
+    # print(os.listdir("./model"))
     root = tk.Tk()
     app = ModelUI(root)
     root.mainloop()
