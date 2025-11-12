@@ -1,6 +1,10 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from ray.tune import RunConfig
+
 from GAN_Minaee_et_al import TVGan, Discriminator
 from torchvision import transforms
 from torchvision.utils import make_grid
@@ -10,8 +14,8 @@ from torchvision.datasets import ImageFolder
 # from tqdm import tqdm
 from datetime import datetime
 from ray import tune
-from ray import train
-from ray.train import Checkpoint, get_checkpoint
+from ray.train import Checkpoint
+from ray.tune import get_checkpoint
 from ray.tune.schedulers import ASHAScheduler
 import ray.cloudpickle as pickle
 import tempfile
@@ -40,7 +44,7 @@ config = {
     "beta1": tune.uniform(0.3, 0.9),
     "lambda_tv": tune.loguniform(1e-3, 1e-1),
     "input_dim": tune.choice([100, 128, 256]),
-    "batch_size": tune.choice([2, 4, 8, 16]),
+    "batch_size": tune.choice([2, 4, 8, 16, 32]),
     "discriminator_trigger": tune.choice([1, 2, 3, 4, 5]),
     "clip_value": tune.choice([0.5, 1.0, 2.0, 5.0]),
 }
@@ -64,7 +68,7 @@ def load_data(batch_size):
 
     print("Loading the training dataset")
     train_dataset = ImageFolder(
-        root="dataset/Cross_Fp_Processed",
+        root="/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/dataset/Cross_Fp_Processed",
         transform=transform,
     )
     train_loader = DataLoader(
@@ -73,7 +77,7 @@ def load_data(batch_size):
 
     print("Loading the evaluation dataset")
     test_dataset = ImageFolder(
-        root="dataset/light_bg",
+        root="/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/dataset/light_bg",
         transform=transform,
     )
     test_loader = DataLoader(
@@ -132,7 +136,7 @@ def train_GAN(config, data_dir=None):
 
 
     # writer = SummaryWriter(f"runs/GAN/{MODEL_NAME}")
-    writer = SummaryWriter(log_dir=train.get_context().get_trial_dir())
+    writer = SummaryWriter(log_dir=tune.get_context().get_trial_dir())
 
     print("Starting the training")
     for epoch in range(start_epoch, NUM_EPOCHS):
@@ -217,7 +221,7 @@ def train_GAN(config, data_dir=None):
         avg_loss_D = total_loss_D / len(train_loader)
         # Report progress to Ray Tune
         metrics = {"loss_G": avg_loss_G, "loss_D": avg_loss_D}
-        train.report(metrics)
+        tune.report(metrics)
 
         checkpoint_data = {
             "epoch"                   : epoch + 1,
@@ -234,7 +238,7 @@ def train_GAN(config, data_dir=None):
                 pickle.dump(checkpoint_data, fp)
 
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            train.report(
+            tune.report(
                 metrics,
                 checkpoint=checkpoint,
             )
@@ -269,18 +273,18 @@ scheduler = ASHAScheduler(
     grace_period=5,
     reduction_factor=2,
 )
+trainable_with_resources = tune.with_resources(train_GAN, {"cpu": 4, "gpu": 1})
 tuner = tune.Tuner(
-    train_GAN,
+    trainable_with_resources,
     tune_config=tune.TuneConfig(
-        metric="loss_G",
-        mode="min",
         scheduler=scheduler,
         num_samples=10,
     ),
     param_space=config,
-    run_config=train.RunConfig(
+    run_config=RunConfig(
         name="gan_tuning",
-        storage_path="runs/ray_tune",
+        storage_path="file:///home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/runs/ray_tune",
+        verbose=1,
     ),
 )
 
