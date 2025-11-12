@@ -234,25 +234,27 @@ def train_VAE(config, data_dir = None):
         avg_loss_combined = total_loss_combined / len(train_loader)
 
         metrics = {"loss_mse": avg_loss_MSE, "loss_ssim": avg_loss_SSIM, "loss_kl": avg_loss_KL, "loss_combined": avg_loss_combined}
-        # tune.report(metrics)
+        if epoch % 50 == 0:
 
-        checkpoint_data = {
-            "epoch"                   : epoch + 1,
-            "model_state_dict"    : model.state_dict(),
-            "optimizer_state_dict"  : optimizer.state_dict(),
-            "global_Step": global_step,
-        }
+            checkpoint_data = {
+                "epoch"                   : epoch + 1,
+                "model_state_dict"    : model.state_dict(),
+                "optimizer_state_dict"  : optimizer.state_dict(),
+                "global_Step": global_step,
+            }
 
-        with tempfile.TemporaryDirectory() as checkpoint_dir:
-            data_path = Path(checkpoint_dir) / "data.pkl"
-            with open(data_path, "wb") as fp:
-                pickle.dump(checkpoint_data, fp)
+            with tempfile.TemporaryDirectory() as checkpoint_dir:
+                data_path = Path(checkpoint_dir) / "data.pkl"
+                with open(data_path, "wb") as fp:
+                    pickle.dump(checkpoint_data, fp)
 
-            checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            tune.report(
-                metrics,
-                checkpoint=checkpoint,
-            )
+                checkpoint = Checkpoint.from_directory(checkpoint_dir)
+                tune.report(
+                    metrics,
+                    checkpoint=checkpoint,
+                )
+        else:
+            tune.report(metrics)
 
     writer.flush()
     writer.close()

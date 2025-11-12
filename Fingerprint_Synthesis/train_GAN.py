@@ -1,3 +1,4 @@
+import json
 import os
 
 import torch
@@ -221,27 +222,31 @@ def train_GAN(config, data_dir=None):
         avg_loss_D = total_loss_D / len(train_loader)
         # Report progress to Ray Tune
         metrics = {"loss_G": avg_loss_G, "loss_D": avg_loss_D}
-        # tune.report(metrics)
 
-        checkpoint_data = {
-            "epoch"                   : epoch + 1,
-            "generator_state_dict"    : generator.state_dict(),
-            "discriminator_state_dict": discriminator.state_dict(),
-            "optimizer_g_state_dict"  : optimizer_G.state_dict(),
-            "optimizer_d_state_dict"  : optimizer_D.state_dict(),
-            "global_Step": global_step,
-        }
+        if epoch % 50 == 0:
 
-        with tempfile.TemporaryDirectory() as checkpoint_dir:
-            data_path = Path(checkpoint_dir) / "data.pkl"
-            with open(data_path, "wb") as fp:
-                pickle.dump(checkpoint_data, fp)
 
-            checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            tune.report(
-                metrics,
-                checkpoint=checkpoint,
-            )
+            checkpoint_data = {
+                "epoch"                   : epoch + 1,
+                "generator_state_dict"    : generator.state_dict(),
+                "discriminator_state_dict": discriminator.state_dict(),
+                "optimizer_g_state_dict"  : optimizer_G.state_dict(),
+                "optimizer_d_state_dict"  : optimizer_D.state_dict(),
+                "global_Step": global_step,
+            }
+
+            with tempfile.TemporaryDirectory() as checkpoint_dir:
+                data_path = Path(checkpoint_dir) / "data.pkl"
+                with open(data_path, "wb") as fp:
+                    pickle.dump(checkpoint_data, fp)
+
+                checkpoint = Checkpoint.from_directory(checkpoint_dir)
+                tune.report(
+                    metrics,
+                    checkpoint=checkpoint,
+                )
+        else:
+            tune.report(metrics)
 
 
     writer.flush()
@@ -292,3 +297,8 @@ tuner = tune.Tuner(
 results = tuner.fit()
 best_result = results.get_best_result(metric="loss_G", mode="min")
 print("Best config:", best_result.config)
+print("Best metrics:", best_result.metrics)
+print("Best checkpoint:", best_result.checkpoint)
+
+with open("best_gan_data.json", "w") as f_out:
+    json.dump(best_result, f_out, indent=4)
