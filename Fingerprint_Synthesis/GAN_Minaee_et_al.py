@@ -6,10 +6,11 @@ class TVGan(nn.Module):
     def __init__(
         self,
         image_channels=1,
+        input_dim=100
     ):
         super().__init__()
 
-        self.fc_input = nn.Linear(100, 512 * 4 * 4)
+        self.fc_input = nn.Linear(input_dim, 512 * 4 * 4)
 
         # -------- Generator --------
         self.generator = nn.Sequential(
