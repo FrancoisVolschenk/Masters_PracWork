@@ -33,6 +33,7 @@ from pathlib import Path
 # print(y.shape)
 # --- END SAMPLE TEST CODE
 
+BASE_PATH = "/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis"
 
 def memory_stats():
     print(torch.cuda.memory_allocated() / 1024**2)
@@ -52,36 +53,36 @@ config = {
 print("Configuring training device")
 # Configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {DEVICE}")
 memory_stats()
 torch.cuda.empty_cache()
-DISCRIMINATOR_TRIGGER = 4
 TIME_STAMP = datetime.now().strftime("%b%d_%H:%M")
 
-def load_data(batch_size):
-    transform = transforms.Compose(
-        [
-            transforms.Grayscale(num_output_channels=1),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5)),
-        ]  # -> [-1, 1]
-    )
+transform = transforms.Compose(
+    [
+        transforms.Grayscale(num_output_channels=1),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5)),
+    ]  # -> [-1, 1]
+)
 
+def load_data(batch_size):
     print("Loading the training dataset")
     train_dataset = ImageFolder(
-        root="/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/dataset/Cross_Fp_Processed",
+        root=f"{BASE_PATH}/dataset/Cross_Fp_Processed",
         transform=transform,
     )
     train_loader = DataLoader(
-        dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=4
+        dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=0
     )
 
     print("Loading the evaluation dataset")
     test_dataset = ImageFolder(
-        root="/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/dataset/light_bg",
+        root=f"{BASE_PATH}/dataset/light_bg",
         transform=transform,
     )
     test_loader = DataLoader(
-        dataset=test_dataset, batch_size=batch_size, shuffle=True, num_workers=4
+        dataset=test_dataset, batch_size=batch_size, shuffle=True, num_workers=0
     )
 
     return train_loader, test_loader
@@ -133,7 +134,6 @@ def train_GAN(config, data_dir=None):
     else:
         start_epoch = 0
         global_step = 0
-
 
     # writer = SummaryWriter(f"runs/GAN/{MODEL_NAME}")
     writer = SummaryWriter(log_dir=tune.get_context().get_trial_dir())
@@ -221,7 +221,7 @@ def train_GAN(config, data_dir=None):
         avg_loss_D = total_loss_D / len(train_loader)
         # Report progress to Ray Tune
         metrics = {"loss_G": avg_loss_G, "loss_D": avg_loss_D}
-        tune.report(metrics)
+        # tune.report(metrics)
 
         checkpoint_data = {
             "epoch"                   : epoch + 1,
@@ -273,7 +273,7 @@ scheduler = ASHAScheduler(
     grace_period=5,
     reduction_factor=2,
 )
-trainable_with_resources = tune.with_resources(train_GAN, {"cpu": 4, "gpu": 1})
+trainable_with_resources = tune.with_resources(train_GAN, {"cpu": 32, "gpu": 0.25})
 tuner = tune.Tuner(
     trainable_with_resources,
     tune_config=tune.TuneConfig(
@@ -283,7 +283,7 @@ tuner = tune.Tuner(
     param_space=config,
     run_config=RunConfig(
         name="gan_tuning",
-        storage_path="file:///home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis/runs/ray_tune",
+        storage_path=f"file://{BASE_PATH}/runs/ray_tune",
         verbose=1,
     ),
 )
