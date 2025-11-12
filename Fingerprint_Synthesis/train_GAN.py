@@ -70,7 +70,8 @@ transform = transforms.Compose(
 def load_data(batch_size):
     print("Loading the training dataset")
     train_dataset = ImageFolder(
-        root=f"{BASE_PATH}/dataset/Cross_Fp_Processed",
+        root=f"{BASE_PATH}/dataset/Combined",
+        # root=f"{BASE_PATH}/dataset/Cross_Fp_Processed",
         transform=transform,
     )
     train_loader = DataLoader(
