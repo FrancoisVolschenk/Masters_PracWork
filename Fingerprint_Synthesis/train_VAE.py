@@ -68,7 +68,7 @@ def load_data(batch_size):
     print("Loading the training dataset")
 
     dataset = ImageFolder(
-        root=f"{BASE_PATH}dataset/light_bg",
+        root=f"{BASE_PATH}/dataset/light_bg",
         transform=transform,
     )
     train_loader = DataLoader(
