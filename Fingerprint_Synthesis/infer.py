@@ -6,6 +6,7 @@ import os
 from random import choice
 from VAE_Attia_et_al import ConvVAE
 from torchvision.transforms.functional import to_pil_image
+BASE_PATH = "/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis"
 
 dataset_path = os.path.join(".", "Fingerprint_Synthesis", "dataset", "half", "fp")
 transform = transforms.Compose(
@@ -30,7 +31,7 @@ def load_model(model_name):
     model = ConvVAE().to(DEVICE)
     model.load_state_dict(
         torch.load(
-            f"./Masters_PracWork/Fingerprint_Synthesis/model/{model_name}",
+            f"{BASE_PATH}/model/{model_name}",
             map_location=DEVICE,
         )
     )

@@ -31,14 +31,14 @@ def memory_stats():
     print(torch.cuda.memory_reserved() / 1024**2)
 
 config = {
-    "lr": tune.loguniform(1e-5, 1e-1),
+    "lr": tune.loguniform(1e-4, 1e-1),
     "latent_dim": tune.choice([64, 100, 128, 256]),
-    "batch_size": tune.choice([8, 16, 32, 64]),
+    "batch_size": tune.choice([16, 32]),
     "clip_value": tune.choice([0.5, 1.0, 2.0, 5.0]),
     "mse_type": tune.choice(["mean", "sum"]),
     "base_kl_weight": tune.choice([0.1, 0.2, 0.3, 0.4, 0.5]),
-    "kl_weight": tune.loguniform(1e-3, 1e-1),
-    "ssim_weight": tune.uniform(0.1, 0.8)
+    "kl_weight": tune.loguniform(0.1, 0.8),
+    "ssim_weight": tune.choice([0.25, 0.5, 0.75])
 }
 
 print("Configuring training device")
@@ -136,23 +136,23 @@ def train_VAE(config, data_dir = None):
         global_step = 0
 
     # writer = SummaryWriter(f"./Masters_PracWork/runs/VAE/{MODEL_NAME}")
-    writer = SummaryWriter(log_dir=tune.get_context().get_trial_dir())
+    # writer = SummaryWriter(log_dir=tune.get_context().get_trial_dir())
 
-    test_images = []
-    # -- Create a list of images to use for progress tracking
-    files = os.listdir(f"{BASE_PATH}/dataset/light_bg/fp")
-    for i in range(4):
-        test_images.append(
-            f"{BASE_PATH}/dataset/light_bg/fp/{random.choice(files)}"
-        )
-    files = os.listdir(
-        f"{BASE_PATH}/dataset/Cross_Fp_Processed/fp"
-    )
-    for i in range(4):
-        test_images.append(
-            f"{BASE_PATH}/dataset/Cross_Fp_Processed/fp/{random.choice(files)}"
-        )
-    files = []
+    # test_images = []
+    # # -- Create a list of images to use for progress tracking
+    # files = os.listdir(f"{BASE_PATH}/dataset/light_bg/fp")
+    # for i in range(4):
+    #     test_images.append(
+    #         f"{BASE_PATH}/dataset/light_bg/fp/{random.choice(files)}"
+    #     )
+    # files = os.listdir(
+    #     f"{BASE_PATH}/dataset/Cross_Fp_Processed/fp"
+    # )
+    # for i in range(4):
+    #     test_images.append(
+    #         f"{BASE_PATH}/dataset/Cross_Fp_Processed/fp/{random.choice(files)}"
+    #     )
+    # files = []
 
     # Do training
     print("Starting the training")
@@ -210,18 +210,18 @@ def train_VAE(config, data_dir = None):
             #     combined_loss=loss.item(),
             # )
             # --- Show the progress of the generated images
-            if i % 500 == 0:
-                with torch.no_grad():
-                    samples = []
-                    for image in test_images:
-                        samples.append(
-                            process_image(
-                                model,
-                                image,
-                            )
-                        )
-                    grid = make_grid(samples, nrow=4, normalize=True)
-                    writer.add_image(f"{MODEL_NAME}/Reconstructions", grid, global_step)
+            # if i % 500 == 0:
+            #     with torch.no_grad():
+            #         samples = []
+            #         for image in test_images:
+            #             samples.append(
+            #                 process_image(
+            #                     model,
+            #                     image,
+            #                 )
+            #             )
+            #         grid = make_grid(samples, nrow=4, normalize=True)
+            #         writer.add_image(f"{MODEL_NAME}/Reconstructions", grid, global_step)
         # if epoch % 15 == 0:
         #     # -- Save a checkpoint version
         #     torch.save(
@@ -257,8 +257,8 @@ def train_VAE(config, data_dir = None):
         else:
             tune.report(metrics)
 
-    writer.flush()
-    writer.close()
+    # writer.flush()
+    # writer.close()
 
     # # Save the model
     # print("Saving the model")

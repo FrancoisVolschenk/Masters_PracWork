@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import infer
 
+BASE_PATH = "/home/francois/Documents/UniversityWork/UJ_Masters/Development/Masters_PracWork/Fingerprint_Synthesis"
 # MODEL_DIR = "./Masters_PracWork/Fingerprint_Synthesis/model"
 MODEL_DIR = "./model"
 
@@ -68,7 +69,6 @@ class ModelUI:
         try:
             idx = self.model_listbox.curselection()[0]
             self.selected_model = self.model_listbox.get(idx)
-            # TODO: Hook into your real model-loading logic
             self.loaded_model = infer.load_model(self.selected_model)
             print(f"Loading model: {self.selected_model}")
             messagebox.showinfo("Model Loaded", f"Loaded model: {self.selected_model}")
@@ -98,9 +98,9 @@ class ModelUI:
         self.show_images(original_img, reconstructed_img)
 
     def show_images(self, original, reconstructed):
-        reconstructed.save(
-            "./SourceAFIS/SourceAFIS/src/main/resources/probes/generated.png"
-        )
+        # reconstructed.save(
+        #     "./SourceAFIS/SourceAFIS/src/main/resources/probes/generated.png"
+        # )
 
         original = original.resize((400, 400))
         reconstructed = reconstructed.resize((400, 400))
