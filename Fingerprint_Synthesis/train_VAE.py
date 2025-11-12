@@ -186,6 +186,8 @@ def train_VAE(config, data_dir = None):
                 + ((MSE_WEIGHT) * reconstruction_loss)
                 + ((SSIM_WEIGHT) * ssim_loss)
             )
+            if torch.isnan(loss):
+                raise Exception("Loss is NaN")
             total_loss_combined += loss.item()
 
             # writer.add_scalar(
